@@ -21,7 +21,7 @@ catch [System.Management.Automation.CommandNotFoundException]
 $output = cmd.exe /c "git clone $MONKEY_GIT_URL $MONKEY_HOME_DIR 2>&1"
 $binDir = (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\bin")
 if ( $output -like "*already exists and is not an empty directory.*"){
-    "Assuming you already have the source directory"
+    "Assuming you already have the source directory. If not, make sure to set an empty directory as monkey's home directory."
 } elseif ($output -like "fatal:*"){
     "Error while cloning monkey from the repository:"
     $output
@@ -47,29 +47,53 @@ catch [System.Management.Automation.CommandNotFoundException]
 {
     "Downloading python 2.7 ..."
     $webClient.DownloadFile($PYTHON_URL, $TEMP_PYTHON_INSTALLER)
-    Start-Process -Wait $TEMP_PYTHON_INSTALLER
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-    Remove-Item $TEMP_PYTHON_INSTALLER
+    Start-Process -Wait $TEMP_PYTHON_INSTALLER -ErrorAction Stop
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+    Remove-Item $TEMP_PYTHON_INSTALLER 
+    
+    # Check if installed correctly
+    $version = cmd.exe /c '"python" --version  2>&1'
+    if ( $version -like '* is not recognized*' ) {
+        "Python is not found in PATH. Add it manually or reinstall python."
+        return
+    }
 }
 
+# Set python home dir
+$PYTHON_PATH = Split-Path -Path (get-command python | Select -ExpandProperty Source)
+
 # Install requirements
-$reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt"
+$reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stop
 & python -m pip install --upgrade pip
 & python -m pip install -r $reqPath
+# Install requirements from monkey to be able to develop monkey itself
+& python -m pip install -r (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_HOME_DIR | Join-Path -ChildPath "\requirements.txt")
 
 # Transfer python file to local directory
 "Copying python folder to bin"
-Copy-Item $PYTHON_PATH -Destination (Join-Path -Path $binDir -ChildPath "Python27") -Recurse -ErrorAction SilentlyContinue
+Copy-Item $PYTHON_PATH -Destination (Join-Path -Path $binDir -ChildPath "Python27") -Recurse -ErrorAction SilentlyContinue 
 "Copying python dynamic libraries"
 Copy-Item $PYTHON_DLL -Destination (Join-Path -Path $binDir -ChildPath "Python27") -ErrorAction SilentlyContinue
 
-# Download mongodb and openssl
-"Downloading mongodb ..."
-$webClient.DownloadFile($MONGODB_URL, $TEMP_MONGODB_ZIP)
-"Unzipping mongodb"
-Expand-Archive $TEMP_MONGODB_ZIP -DestinationPath (Join-Path -Path $binDir -ChildPath "mongodb") -ErrorAction SilentlyContinue
-"Removing zip file"
-Remove-Item $TEMP_MONGODB_ZIP
+# Download mongodb
+if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "mongodb") )){
+    "Downloading mongodb ..."
+    $webClient.DownloadFile($MONGODB_URL, $TEMP_MONGODB_ZIP)
+    "Unzipping mongodb"
+    Expand-Archive $TEMP_MONGODB_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
+    # Get unzipped folder's name
+    $mongodb_folder = Get-ChildItem -Path $binDir | Where-Object -FilterScript {($_.Name -like "mongodb*")} | Select -ExpandProperty Name
+    # Move all files from extracted folder to mongodb folder
+    New-Item -ItemType directory -Path (Join-Path -Path $binDir -ChildPath "mongodb")
+    New-Item -ItemType directory -Path (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "db")
+    "Moving extracted files"
+    Move-Item -Path (Join-Path -Path $binDir -ChildPath $mongodb_folder | Join-Path -ChildPath "\bin\*") -Destination (Join-Path -Path $binDir -ChildPath "mongodb\")
+    "Removing zip file"
+    Remove-Item $TEMP_MONGODB_ZIP
+    Remove-Item (Join-Path -Path $binDir -ChildPath $mongodb_folder) -Recurse
+}
+
+# Download OpenSSL
 "Downloading OpenSSL ..."
 $webClient.DownloadFile($OPEN_SSL_URL, $TEMP_OPEN_SSL_ZIP)
 "Unzipping OpenSSl"
@@ -80,7 +104,7 @@ Remove-Item $TEMP_OPEN_SSL_ZIP
 # Download and install C++ redistributable
 "Downloading C++ redistributable ..."
 $webClient.DownloadFile($CPP_URL, $TEMP_CPP_INSTALLER)
-Start-Process -Wait $TEMP_CPP_INSTALLER
+Start-Process -Wait $TEMP_CPP_INSTALLER -ErrorAction Stop
 Remove-Item $TEMP_CPP_INSTALLER
 
 # Generate ssl certificate
@@ -120,12 +144,26 @@ catch [System.Management.Automation.CommandNotFoundException]
 #Refresh path 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 "Updating npm"
-& npm i npm
 Push-Location -Path (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\cc\ui")
 & npm update
 & npm run dist
 Pop-Location
 
+# Install pywin32
+"Downloading pywin32"
+$webClient.DownloadFile($PYWIN32_URL, $TEMP_PYWIN32_INSTALLER)
+Start-Process -Wait $TEMP_PYWIN32_INSTALLER -ErrorAction Stop
+Remove-Item $TEMP_PYWIN32_INSTALLER
+
+# Download upx
+if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "upx.exe") )){
+    "Downloading upx ..."
+    $webClient.DownloadFile($UPX_URL, $TEMP_UPX_ZIP)
+    "Unzipping upx"
+    Expand-Archive $TEMP_UPX_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
+    "Removing zip file"
+    Remove-Item $TEMP_UPX_ZIP
+}
 
 
 
