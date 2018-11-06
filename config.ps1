@@ -25,7 +25,7 @@ $TEMP_OPEN_SSL_ZIP = ".\openssl.zip"
 $TEMP_CPP_INSTALLER = "cpp.exe"
 $TEMP_NPM_INSTALLER = "node.msi"
 $TEMP_PYWIN32_INSTALLER = "pywin32.exe"
-$UPX_BINARY_ZIP = "upx.zip"
+$TEMP_UPX_ZIP = "upx.zip"
 
 # Other url's
 $MONGODB_URL = "https://downloads.mongodb.org/win32/mongodb-win32-x86_64-2008plus-ssl-latest.zip"

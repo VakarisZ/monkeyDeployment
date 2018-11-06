@@ -67,7 +67,8 @@ $reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join
 & python -m pip install --upgrade pip
 & python -m pip install -r $reqPath
 # Install requirements from monkey to be able to develop monkey itself
-& python -m pip install -r (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_HOME_DIR | Join-Path -ChildPath "\requirements.txt")
+$reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\requirements.txt"
+& python -m pip install -r $reqPath
 
 # Transfer python file to local directory
 "Copying python folder to bin"
