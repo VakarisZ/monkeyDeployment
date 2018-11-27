@@ -1,6 +1,6 @@
 # Set variables for script execution
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$webClient = New-Object System.Net.WebClient 
+$webClient = New-Object System.Net.WebClient
 
 # We check if git is installed
 try
@@ -48,9 +48,8 @@ catch [System.Management.Automation.CommandNotFoundException]
     "Downloading python 2.7 ..."
     $webClient.DownloadFile($PYTHON_URL, $TEMP_PYTHON_INSTALLER)
     Start-Process -Wait $TEMP_PYTHON_INSTALLER -ErrorAction Stop
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
-    Remove-Item $TEMP_PYTHON_INSTALLER 
-    
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+    Remove-Item $TEMP_PYTHON_INSTALLER
     # Check if installed correctly
     $version = cmd.exe /c '"python" --version  2>&1'
     if ( $version -like '* is not recognized*' ) {
@@ -60,18 +59,24 @@ catch [System.Management.Automation.CommandNotFoundException]
 }
 
 # Set python home dir
-$PYTHON_PATH = Split-Path -Path (get-command python | Select -ExpandProperty Source)
+$PYTHON_PATH = Split-Path -Path (get-command python | Select-Object -ExpandProperty Source)
 
 # Get vcforpython27 before installing requirements
 "Downloading Visual C++ Compiler for Python 2.7 ..."
 $webClient.DownloadFile($VC_FOR_PYTHON27_URL, $TEMP_VC_FOR_PYTHON27_INSTALLER)
 Start-Process -Wait $TEMP_VC_FOR_PYTHON27_INSTALLER -ErrorAction Stop
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
-Remove-Item $TEMP_VC_FOR_PYTHON27_INSTALLER 
+Remove-Item $TEMP_VC_FOR_PYTHON27_INSTALLER
 
 # Install requirements
-$reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stop
-& python -m pip install --upgrade pip
+$reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stopd
+"Upgrading pip..."
+$output = cmd.exe /c 'python -m pip install --upgrade pip 2>&1'
+$output
+if ( $output -like '*No module named pip*' ) {
+    "Make sure pip module is installed and re-run this script."
+    return
+}
 & python -m pip install -r $reqPath
 # Install requirements from monkey to be able to develop monkey itself
 $reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\requirements.txt"
@@ -79,7 +84,7 @@ $reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -
 
 # Transfer python file to local directory
 "Copying python folder to bin"
-Copy-Item $PYTHON_PATH -Destination (Join-Path -Path $binDir -ChildPath "Python27") -Recurse -ErrorAction SilentlyContinue 
+Copy-Item $PYTHON_PATH -Destination (Join-Path -Path $binDir -ChildPath "Python27") -Recurse -ErrorAction SilentlyContinue
 "Copying python dynamic libraries"
 Copy-Item $PYTHON_DLL -Destination (Join-Path -Path $binDir -ChildPath "Python27") -ErrorAction SilentlyContinue
 
@@ -90,7 +95,7 @@ if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "mongodb") )){
     "Unzipping mongodb"
     Expand-Archive $TEMP_MONGODB_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
     # Get unzipped folder's name
-    $mongodb_folder = Get-ChildItem -Path $binDir | Where-Object -FilterScript {($_.Name -like "mongodb*")} | Select -ExpandProperty Name
+    $mongodb_folder = Get-ChildItem -Path $binDir | Where-Object -FilterScript {($_.Name -like "mongodb*")} | Select-Object -ExpandProperty Name
     # Move all files from extracted folder to mongodb folder
     New-Item -ItemType directory -Path (Join-Path -Path $binDir -ChildPath "mongodb")
     New-Item -ItemType directory -Path (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "db")
@@ -163,24 +168,30 @@ $webClient.DownloadFile($PYWIN32_URL, $TEMP_PYWIN32_INSTALLER)
 Start-Process -Wait $TEMP_PYWIN32_INSTALLER -ErrorAction Stop
 Remove-Item $TEMP_PYWIN32_INSTALLER
 
+# Create infection_monkey/bin directory if not already present
+$binDir = (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\bin")
+New-Item -ItemType directory -path $binaries -ErrorAction SilentlyContinue
+
 # Download upx
 if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "upx.exe") )){
     "Downloading upx ..."
     $webClient.DownloadFile($UPX_URL, $TEMP_UPX_ZIP)
     "Unzipping upx"
     Expand-Archive $TEMP_UPX_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
+    Move-Item -Path (Join-Path -Path $binDir -ChildPath $UPX_FOLDER | Join-Path -ChildPath "upx.exe") -Destination $binDir
+    # Remove unnecessary files
+    Remove-Item -Recurse -Force (Join-Path -Path $binDir -ChildPath $UPX_FOLDER)
     "Removing zip file"
     Remove-Item $TEMP_UPX_ZIP
 }
 
 # Download mimikatz binaries
-$binDir = (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\bin")
-$mk32_path = Join-Path -Path (Join-Path -Path $binDir -ChildPath $MK32_DLL)
+$mk32_path = Join-Path -Path $binDir -ChildPath $MK32_DLL
 if(!(Test-Path -Path $mk32_path )){
     "Downloading mimikatz 32 binary"
     $webClient.DownloadFile($MK32_DLL_URL, $mk32_path)
 }
-$mk64_path = Join-Path -Path (Join-Path -Path $binDir -ChildPath $MK64_DLL)
+$mk64_path = Join-Path -Path $binDir -ChildPath $MK64_DLL
 if(!(Test-Path -Path $mk64_path )){
     "Downloading mimikatz 32 binary"
     $webClient.DownloadFile($MK64_DLL_URL, $mk64_path)
