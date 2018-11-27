@@ -62,6 +62,13 @@ catch [System.Management.Automation.CommandNotFoundException]
 # Set python home dir
 $PYTHON_PATH = Split-Path -Path (get-command python | Select -ExpandProperty Source)
 
+# Get vcforpython27 before installing requirements
+"Downloading Visual C++ Compiler for Python 2.7 ..."
+$webClient.DownloadFile($VC_FOR_PYTHON27_URL, $TEMP_VC_FOR_PYTHON27_INSTALLER)
+Start-Process -Wait $TEMP_VC_FOR_PYTHON27_INSTALLER -ErrorAction Stop
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
+Remove-Item $TEMP_VC_FOR_PYTHON27_INSTALLER 
+
 # Install requirements
 $reqPath = Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stop
 & python -m pip install --upgrade pip
@@ -164,6 +171,19 @@ if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "upx.exe") )){
     Expand-Archive $TEMP_UPX_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
     "Removing zip file"
     Remove-Item $TEMP_UPX_ZIP
+}
+
+# Download mimikatz binaries
+$binDir = (Join-Path -Path $MONKEY_HOME_DIR -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\bin")
+$mk32_path = Join-Path -Path (Join-Path -Path $binDir -ChildPath $MK32_DLL)
+if(!(Test-Path -Path $mk32_path )){
+    "Downloading mimikatz 32 binary"
+    $webClient.DownloadFile($MK32_DLL_URL, $mk32_path)
+}
+$mk64_path = Join-Path -Path (Join-Path -Path $binDir -ChildPath $MK64_DLL)
+if(!(Test-Path -Path $mk64_path )){
+    "Downloading mimikatz 32 binary"
+    $webClient.DownloadFile($MK64_DLL_URL, $mk64_path)
 }
 
 
