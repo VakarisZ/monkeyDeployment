@@ -1,6 +1,12 @@
 #!/bin/bash
 source config.sh
 
+handle_error () {
+    echo "Fix the errors above and rerun the script"
+    exit 1
+}
+
+
 git --version &>/dev/null
 git_available=$?
 if [[ ${git_available} != 0 ]]; then
@@ -13,7 +19,7 @@ if [[ ! -d ${MONKEY_HOME_DIR} ]]; then
 fi
 
 if [[ ! -d "$MONKEY_HOME_DIR/monkey" ]]; then # If not already cloned
-    git clone ${MONKEY_GIT_URL} ${MONKEY_HOME_DIR} 2>&1 || exit 1
+    git clone ${MONKEY_GIT_URL} ${MONKEY_HOME_DIR} 2>&1 || handle_error
 fi
 
 # Create folders
@@ -28,7 +34,7 @@ if [[ ${python_version} == *"command not found"* ]] || [[ ${python_version} != *
     exit 1
 fi
 requirements="$MAIN_ISLAND_PATH/requirements.txt"
-sudo python -m pip install -r ${requirements} || exit 1
+sudo python -m pip install -r ${requirements} || handle_error
 
 # Download binaries
 wget -c -N -P ${ISLAND_BINARIES_PATH} ${LINUX_32_BINARY_URL}
@@ -45,8 +51,9 @@ chmod a+x "$ISLAND_BINARIES_PATH/$WINDOWS_64_BINARY_NAME"
 kernel=`uname -mrs`
 linux_dist=`lsb_release -a 2> /dev/null`
 
-if [[ ! -f "$MONGO_BIN_PATH/mongod" ]] && [[ ${kernel} != *"x86_64"* ]] || \
-   { [[ ${linux_dist} != *"Debian"* ]] && [[ ${linux_dist} != *"Ubuntu"* ]]; }; then
+# If a user haven't installed mongo manually check if we can install it with our script
+if [[ ! -f "$MONGO_BIN_PATH/mongod" ]] && { [[ ${kernel} != *"x86_64"* ]] || \
+   { [[ ${linux_dist} != *"Debian"* ]] && [[ ${linux_dist} != *"Ubuntu"* ]]; }; }; then
     echo "Script does not support your operating system for mongodb installation.
     Reference monkey island readme and install it manually"
     exit 1
@@ -56,12 +63,10 @@ fi
 if [[ ! -f "$MONGO_BIN_PATH/mongod" ]]; then
     if [[ ${linux_dist} == *"Debian"* ]]; then
         wget -c -N -O "/tmp/mongo.tgz" ${MONGO_DEBIAN_URL}
-        echo "Unzipped"
     elif [[ ${linux_dist} == *"Ubuntu"* ]]; then
         wget -c -N -O "/tmp/mongo.tgz" ${MONGO_UBUNTU_URL}
-        echo "Unzipped"
     fi
-    sudo tar --strip 2 --wildcards -C ${MONGO_BIN_PATH} -zxvf /tmp/mongo.tgz mongo*/bin/* || exit 1
+    sudo tar --strip 2 --wildcards -C ${MONGO_BIN_PATH} -zxvf /tmp/mongo.tgz mongo*/bin/* || handle_error
 else
     echo "Mongo db already installed"
 fi
@@ -70,26 +75,27 @@ sudo apt-get install openssl
 
 # Generate SSL certificate
 ${MAIN_ISLAND_PATH}/linux/create_certificate.sh
-cp -r ${MAIN_ISLAND_PATH}/cc /var/monkey/monkey_island/ || exit 1
+cp -r ${MAIN_ISLAND_PATH}/cc ${VAR_ISLAND_PATH} || handle_error
 
 # Install npm
-sudo apt-get install npm || exit 1
+sudo apt-get install npm
 
-cd "$VAR_ISLAND_PATH/cc/ui" || exit 1
-npm update || exit 1
-npm run dist || exit 1
+cd "$VAR_ISLAND_PATH/cc/ui" || handle_error
+npm update
+npm run dist
 
 # Monkey setup
 sudo apt-get update
-sudo apt-get install python-pip python-dev libffi-dev upx libssl-dev libc++1 || exit 1
-cd ${MONKEY_HOME_DIR}/infection_monkey || exit 1
+sudo apt-get install python-pip python-dev libffi-dev upx libssl-dev libc++1
+cd ${MONKEY_HOME_DIR}/monkey/infection_monkey || handle_error
 pip install -r requirements.txt
 
 # Build samba
 sudo apt-get install gcc-multilib
-cd ${MONKEY_HOME_DIR}/infection_monkey/monkey_utils/sambacry_monkey_runner
+cd ${MONKEY_HOME_DIR}/monkey/infection_monkey/monkey_utils/sambacry_monkey_runner
+chmod +x ./build.sh || handle_error
 ./build.sh
 
-chmod +x ${MONKEY_HOME_DIR}/build_linux.sh
+chmod +x ${MONKEY_HOME_DIR}/monkey/infection_monkey/build_linux.sh
 
 exit 0

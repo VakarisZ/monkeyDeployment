@@ -7,9 +7,9 @@ MONKEY_GIT_URL="https://github.com/guardicore/monkey"
 PYTHON_URL="https://www.python.org/ftp/python/2.7.13/python-2.7.13.amd64.msi"
 
 # Monkey paths
-VAR_ISLAND_PATH="/var/monkey/monkey_island"
+VAR_ISLAND_PATH="/var/monkey_island"
 MAIN_ISLAND_PATH="$MONKEY_HOME_DIR/monkey/monkey_island"
-MONKEY_COMMON_PATH="/var/monkey/common/"
+MONKEY_COMMON_PATH="/var/common/"
 MONGO_PATH="$VAR_ISLAND_PATH/bin/mongodb"
 MONGO_BIN_PATH="$MONGO_PATH/bin"
 ISLAND_DB_PATH="$VAR_ISLAND_PATH/db"
