@@ -7,13 +7,13 @@ MONKEY_GIT_URL="https://github.com/guardicore/monkey"
 PYTHON_URL="https://www.python.org/ftp/python/2.7.13/python-2.7.13.amd64.msi"
 
 # Monkey paths
-VAR_ISLAND_PATH="/var/monkey_island"
+VAR_ISLAND_PATH="/var/monkey/monkey_island"
 MAIN_ISLAND_PATH="$MONKEY_HOME_DIR/monkey/monkey_island"
-MONKEY_COMMON_PATH="/var/common/"
-MONGO_PATH="$VAR_ISLAND_PATH/bin/mongodb"
+MONKEY_COMMON_PATH="$MONKEY_HOME_DIR/monkey/common/"
+MONGO_PATH="$MAIN_ISLAND_PATH/bin/mongodb"
 MONGO_BIN_PATH="$MONGO_PATH/bin"
-ISLAND_DB_PATH="$VAR_ISLAND_PATH/db"
-ISLAND_BINARIES_PATH="$VAR_ISLAND_PATH/cc/binaries"
+ISLAND_DB_PATH="$MAIN_ISLAND_PATH/db"
+ISLAND_BINARIES_PATH="$MAIN_ISLAND_PATH/cc/binaries"
 
 # Monkey binaries
 LINUX_32_BINARY_URL="https://github.com/guardicore/monkey/releases/download/1.6/monkey-linux-32"

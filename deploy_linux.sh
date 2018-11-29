@@ -29,16 +29,10 @@ if [[ ! -d "$MONKEY_HOME_DIR/monkey" ]]; then # If not already cloned
 fi
 
 # Create folders
-log_message "Creating island dirs under $VAR_ISLAND_PATH"
-sudo mkdir -p ${VAR_ISLAND_PATH}
-sudo chmod 777 ${VAR_ISLAND_PATH}
-sudo mkdir -p ${MONKEY_COMMON_PATH}
-sudo chmod 777 ${MONKEY_COMMON_PATH}
+log_message "Creating island dirs under $MAIN_ISLAND_PATH"
 mkdir -p ${MONGO_BIN_PATH}
 mkdir -p ${ISLAND_DB_PATH}
 mkdir -p ${ISLAND_BINARIES_PATH}
-
-
 
 python_version=`python --version 2>&1`
 if [[ ${python_version} == *"command not found"* ]] || [[ ${python_version} != *"Python 2.7"* ]]; then
@@ -92,16 +86,22 @@ sudo apt-get install openssl
 
 # Generate SSL certificate
 log_message "Generating certificate"
+cd ${MAIN_ISLAND_PATH} || handle_error
+openssl genrsa -out cc/server.key 1024 || handle_error
+openssl req -new -key cc/server.key -out cc/server.csr \
+-subj "/C=GB/ST=London/L=London/O=Global Security/OU=Monkey Department/CN=monkey.com" || handle_error
+openssl x509 -req -days 366 -in cc/server.csr -signkey cc/server.key -out cc/server.crt || handle_error
+
+
 chmod +x ${MAIN_ISLAND_PATH}/linux/create_certificate.sh || handle_error
 ${MAIN_ISLAND_PATH}/linux/create_certificate.sh || handle_error
-cp -r ${MAIN_ISLAND_PATH}/cc ${VAR_ISLAND_PATH} || handle_error
 
 # Install npm
 log_message "Installing npm"
 sudo apt-get install npm
 
 log_message "Generating front end"
-cd "$VAR_ISLAND_PATH/cc/ui" || handle_error
+cd "$MAIN_ISLAND_PATH/cc/ui" || handle_error
 npm update
 npm run dist
 
@@ -121,4 +121,5 @@ chmod +x ./build.sh || handle_error
 
 chmod +x ${MONKEY_HOME_DIR}/monkey/infection_monkey/build_linux.sh
 
+log_message "Deployment script finished."
 exit 0
