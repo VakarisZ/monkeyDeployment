@@ -197,6 +197,6 @@ if(!(Test-Path -Path $mk64_path )){
     $webClient.DownloadFile($MK64_DLL_URL, $mk64_path)
 }
 
-
+"Script finished"
 
 
