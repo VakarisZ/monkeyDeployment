@@ -1,5 +1,5 @@
 # Absolute monkey's path
-$MONKEY_HOME_DIR = "C:\test\empty"
+$MONKEY_FOLDER_NAME = "infection_monkey"
 # Url of public git repository that contains monkey's source code
 $MONKEY_GIT_URL = "https://github.com/guardicore/monkey"
 # Link to the latest python download or install it manually
