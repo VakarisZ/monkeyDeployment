@@ -66,7 +66,7 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
     }
 
     # Set python home dir
-    $PYTHON_PATH = Split-Path -Path (get-command python | Select-Object -ExpandProperty Source)
+    $PYTHON_PATH = Split-Path -Path (Get-Command python | Select-Object -ExpandProperty Source)
 
     # Get vcforpython27 before installing requirements
     "Downloading Visual C++ Compiler for Python 2.7 ..."
@@ -75,32 +75,26 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") 
     Remove-Item $TEMP_VC_FOR_PYTHON27_INSTALLER
 
-    # Install requirements
-    $reqPath = Join-Path -Path $monkey_home -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stopd
+    # Install requirements for island
+    $islandRequirements = Join-Path -Path $monkey_home -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\requirements.txt" -ErrorAction Stop
     "Upgrading pip..."
-    $output = cmd.exe /c 'python -m pip install --upgrade pip 2>&1'
+    $output = cmd.exe /c 'python -m pip install --user --upgrade pip 2>&1'
     $output
     if ( $output -like '*No module named pip*' ) {
         "Make sure pip module is installed and re-run this script."
         return
     }
-    & python -m pip install -r $reqPath
-    # Install requirements from monkey to be able to develop monkey itself
-    $reqPath = Join-Path -Path $monkey_home -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\requirements.txt"
-    & python -m pip install -r $reqPath
-
-    # Transfer python file to local directory
-    "Copying python folder to bin"
-    Copy-Item $PYTHON_PATH -Destination (Join-Path -Path $binDir -ChildPath "Python27") -Recurse -ErrorAction SilentlyContinue
-    "Copying python dynamic libraries"
-    Copy-Item $PYTHON_DLL -Destination (Join-Path -Path $binDir -ChildPath "Python27") -ErrorAction SilentlyContinue
+    & python -m pip install --user -r $islandRequirements
+    # Install requirements for monkey
+    $monkeyRequirements = Join-Path -Path $monkey_home -ChildPath $MONKEY_DIR | Join-Path -ChildPath "\requirements.txt"
+    & python -m pip install --user -r $monkeyRequirements
 
     # Download mongodb
     if(!(Test-Path -Path (Join-Path -Path $binDir -ChildPath "mongodb") )){
         "Downloading mongodb ..."
         $webClient.DownloadFile($MONGODB_URL, $TEMP_MONGODB_ZIP)
         "Unzipping mongodb"
-        Expand-Archive $TEMP_MONGODB_ZIP -DestinationPath $binDir -ErrorAction SilentlyContinue
+        Expand-Archive $TEMP_MONGODB_ZIP -DestinationPath $binDir
         # Get unzipped folder's name
         $mongodb_folder = Get-ChildItem -Path $binDir | Where-Object -FilterScript {($_.Name -like "mongodb*")} | Select-Object -ExpandProperty Name
         # Move all files from extracted folder to mongodb folder

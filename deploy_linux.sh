@@ -63,7 +63,7 @@ fi
 
 log_message "Installing island requirements"
 requirements="$ISLAND_PATH/requirements.txt"
-python -m pip install -r ${requirements} || handle_error
+python -m pip install --user -r ${requirements} || handle_error
 
 # Download binaries
 log_message "Downloading binaries"
@@ -130,7 +130,7 @@ npm run dist
 log_message "Installing monkey requirements"
 sudo apt-get install python-pip python-dev libffi-dev upx libssl-dev libc++1
 cd ${monkey_home}/monkey/infection_monkey || handle_error
-pip install -r requirements.txt
+python -m pip install --user -r requirements.txt || handle_error
 
 # Build samba
 log_message "Building samba binaries"
