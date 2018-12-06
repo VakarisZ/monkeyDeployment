@@ -193,8 +193,20 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
     }
     $mk64_path = Join-Path -Path $binDir -ChildPath $MK64_DLL
     if(!(Test-Path -Path $mk64_path )){
-        "Downloading mimikatz 32 binary"
+        "Downloading mimikatz 64 binary"
         $webClient.DownloadFile($MK64_DLL_URL, $mk64_path)
+    }
+
+    # Download sambacry binaries
+    $samba32_path = Join-Path -Path $SAMBA_BINARIES_DIR -ChildPath $SAMBA_32_BINARY_NAME
+    if(!(Test-Path -Path $samba32_path )){
+        "Downloading sambacry 32 binary"
+        $webClient.DownloadFile($SAMBA_32_BINARY_URL, $samba32_path)
+    }
+    $samba64_path = Join-Path -Path $SAMBA_BINARIES_DIR -ChildPath $SAMBA_32_BINARY_NAME
+    if(!(Test-Path -Path $samba64_path )){
+        "Downloading sambacry 64 binary"
+        $webClient.DownloadFile($SAMBA_64_BINARY_URL, $samba64_path)
     }
 
     "Script finished"
