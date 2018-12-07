@@ -1,4 +1,4 @@
-function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
+function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName, [String] $branch = "develop"){
     # Import the config variables
     . ./config.ps1
     "Config variables from config.ps1 imported"
@@ -25,7 +25,7 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
     }
 
     # Download the monkey
-    $output = cmd.exe /c "git clone $MONKEY_GIT_URL $monkey_home 2>&1"
+    $output = cmd.exe /c "git clone --single-branch -b $branch $MONKEY_GIT_URL $monkey_home 2>&1"
     $binDir = (Join-Path -Path $monkey_home -ChildPath $MONKEY_ISLAND_DIR | Join-Path -ChildPath "\bin")
     if ( $output -like "*already exists and is not an empty directory.*"){
         "Assuming you already have the source directory. If not, make sure to set an empty directory as monkey's home directory."
@@ -39,7 +39,7 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
         New-Item -ItemType directory -path $binDir
         "Bin directory added"
     }
-
+    
     # We check if python is installed
     try
     {
