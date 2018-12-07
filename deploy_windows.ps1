@@ -198,12 +198,13 @@ function Deploy-Windows([String] $monkey_home = (Get-Item -Path ".\").FullName){
     }
 
     # Download sambacry binaries
-    $samba32_path = Join-Path -Path $SAMBA_BINARIES_DIR -ChildPath $SAMBA_32_BINARY_NAME
+    $samba_path = Join-Path -Path $monkey_home -ChildPath $SAMBA_BINARIES_DIR
+    $samba32_path = Join-Path -Path $samba_path -ChildPath $SAMBA_32_BINARY_NAME
     if(!(Test-Path -Path $samba32_path )){
         "Downloading sambacry 32 binary"
         $webClient.DownloadFile($SAMBA_32_BINARY_URL, $samba32_path)
     }
-    $samba64_path = Join-Path -Path $SAMBA_BINARIES_DIR -ChildPath $SAMBA_32_BINARY_NAME
+    $samba64_path = Join-Path -Path $samba_path -ChildPath $SAMBA_64_BINARY_NAME
     if(!(Test-Path -Path $samba64_path )){
         "Downloading sambacry 64 binary"
         $webClient.DownloadFile($SAMBA_64_BINARY_URL, $samba64_path)
