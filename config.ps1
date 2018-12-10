@@ -1,23 +1,28 @@
 # Absolute monkey's path
-$MONKEY_HOME_DIR = "C:\test"
+$MONKEY_FOLDER_NAME = "infection_monkey"
 # Url of public git repository that contains monkey's source code
 $MONKEY_GIT_URL = "https://github.com/guardicore/monkey"
 # Link to the latest python download or install it manually
 $PYTHON_URL = "https://www.python.org/ftp/python/2.7.13/python-2.7.13.amd64.msi"
 
 # Monkey binaries
-$LINUX_32_BINARY_URL="https://github.com/guardicore/monkey/releases/download/1.6/monkey-linux-32"
-$LINUX_32_BINARY_PATH= "monkey-linux-32"
-$LINUX_64_BINARY_URL="https://github.com/guardicore/monkey/releases/download/1.6/monkey-linux-64"
-$LINUX_64_BINARY_PATH="monkey-linux-64"
-$WINDOWS_32_BINARY_URL="https://github.com/guardicore/monkey/releases/download/1.6/monkey-windows-32.exe"
-$WINDOWS_32_BINARY_PATH="monkey-windows-32.exe"
-$WINDOWS_64_BINARY_URL="https://github.com/guardicore/monkey/releases/download/1.6/monkey-windows-64.exe"
-$WINDOWS_64_BINARY_PATH="monkey-windows-64.exe"
+$LINUX_32_BINARY_URL = "https://github.com/guardicore/monkey/releases/download/1.6/monkey-linux-32"
+$LINUX_32_BINARY_PATH = "monkey-linux-32"
+$LINUX_64_BINARY_URL = "https://github.com/guardicore/monkey/releases/download/1.6/monkey-linux-64"
+$LINUX_64_BINARY_PATH = "monkey-linux-64"
+$WINDOWS_32_BINARY_URL = "https://github.com/guardicore/monkey/releases/download/1.6/monkey-windows-32.exe"
+$WINDOWS_32_BINARY_PATH = "monkey-windows-32.exe"
+$WINDOWS_64_BINARY_URL = "https://github.com/guardicore/monkey/releases/download/1.6/monkey-windows-64.exe"
+$WINDOWS_64_BINARY_PATH = "monkey-windows-64.exe"
+$SAMBA_32_BINARY_URL = "https://github.com/VakarisZ/tempBinaries/raw/master/sc_monkey_runner32.so"
+$SAMBA_32_BINARY_NAME= "sc_monkey_runner32.so"
+$SAMBA_64_BINARY_URL = "https://github.com/VakarisZ/tempBinaries/raw/master/sc_monkey_runner64.so"
+$SAMBA_64_BINARY_NAME = "sc_monkey_runner64.so"
 
 # Other directories and paths ( most likely you dont need to configure)
 $MONKEY_ISLAND_DIR = "\monkey\monkey_island"
 $MONKEY_DIR = "\monkey\infection_monkey"
+$SAMBA_BINARIES_DIR = Join-Path -Path $MONKEY_DIR -ChildPath "\monkey_utils\sambacry_monkey_runner"
 $PYTHON_DLL = "C:\Windows\System32\python27.dll"
 $MK32_DLL = "mk32.dll"
 $MK64_DLL = "mk64.dll"
